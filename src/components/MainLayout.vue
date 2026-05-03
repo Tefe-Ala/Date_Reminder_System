@@ -35,9 +35,9 @@
       <nav class="flex-1 py-4 bg-[#c0fff4] dark:bg-gray-800 overflow-y-auto">
         <ul class="space-y-1">
           <li v-for="item in sidebarItems" :key="item.name">
-            <a 
-              :href="item.href"
-              @click.prevent="setActiveSidebar(item.name)"
+            <router-link 
+              :to="item.to"
+              @click="setActiveSidebar(item.name)"
               :class="[
                 'flex items-center gap-3 px-4 py-3 mx-2 rounded-lg transition-all duration-200',
                 activeSidebar === item.name 
@@ -49,12 +49,12 @@
             >
               <span class="text-xl flex-shrink-0">{{ item.icon }}</span>
               <span :class="{'hidden': !sidebarOpen}" class="font-medium whitespace-nowrap">{{ item.name }}</span>
-            </a>
+            </router-link>
           </li>
         </ul>
       </nav>
 
-      <!-- Sidebar Footer - Now this is just the logout button -->
+      <!-- Sidebar Footer -->
       <div class="p-4 border-t dark:border-gray-700">
         <a 
           href="#"
@@ -79,84 +79,17 @@
       <!-- Navbar Component -->
       <Navbar @toggle-sidebar="toggleSidebar" />
 
-      <!-- Main Content - Removed overflow-y-auto from here -->
-      <main class="flex-1 p-6">
+      <!-- Main Content -->
+      <main class="flex-1 p-6 overflow-y-auto">
         <div class="max-w-7xl mx-auto">
-          <!-- Content based on active navigation -->
-          <div v-if="activeNav === 'Home'" class="space-y-4">
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Dashboard</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                <h3 class="font-semibold text-gray-700 dark:text-gray-300">Total Reminders</h3>
-                <p class="text-3xl font-bold text-blue-600 mt-2">24</p>
-              </div>
-              <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                <h3 class="font-semibold text-gray-700 dark:text-gray-300">Upcoming Events</h3>
-                <p class="text-3xl font-bold text-green-600 mt-2">8</p>
-              </div>
-              <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                <h3 class="font-semibold text-gray-700 dark:text-gray-300">Completed</h3>
-                <p class="text-3xl font-bold text-purple-600 mt-2">156</p>
-              </div>
-            </div>
-          </div>
-
-          <div v-else-if="activeNav === 'About'" class="space-y-4">
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-white">About Us</h2>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <p class="text-gray-600 dark:text-gray-300">
-                Date Reminder is your personal assistant for managing important dates, events, and appointments. 
-                Never miss an important deadline or celebration again!
-              </p>
-            </div>
-          </div>
-
-          <div v-else-if="activeNav === 'Contact'" class="space-y-4">
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Contact Us</h2>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <p class="text-gray-600 dark:text-gray-300">Email: support@datereminder.com</p>
-              <p class="text-gray-600 dark:text-gray-300 mt-2">Phone: +1 (555) 123-4567</p>
-              <p class="text-gray-600 dark:text-gray-300 mt-2">Address: 123 Reminder Street, Digital City, DC 12345</p>
-            </div>
-          </div>
-
-          <div v-else-if="activeNav === 'My Appointment'" class="space-y-4">
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-white">My Appointments</h2>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-              <div class="divide-y dark:divide-gray-700">
-                <div v-for="appointment in appointments" :key="appointment.id" class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <div class="flex justify-between items-center">
-                    <div>
-                      <h3 class="font-semibold text-gray-800 dark:text-white">{{ appointment.title }}</h3>
-                      <p class="text-sm text-gray-500 dark:text-gray-400">{{ appointment.date }} at {{ appointment.time }}</p>
-                    </div>
-                    <span :class="[
-                      'px-2 py-1 text-xs rounded-full',
-                      appointment.status === 'Confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                    ]">
-                      {{ appointment.status }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Default content -->
-          <div v-else class="space-y-4">
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Welcome to Date Reminder</h2>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <p class="text-gray-600 dark:text-gray-300">Select a menu option to get started.</p>
-            </div>
-          </div>
+          <router-view />
         </div>
       </main>
 
-      <!-- New System Footer Component -->
+      <!-- System Footer -->
       <footer class="bg-white dark:bg-gray-800 shadow-lg border-t dark:border-gray-700 mt-auto">
         <div class="px-6 py-4">
           <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-            <!-- Footer Brand -->
             <div class="flex items-center gap-2">
               <div class="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg"></div>
               <span class="text-sm font-medium text-gray-600 dark:text-gray-300">
@@ -164,7 +97,6 @@
               </span>
             </div>
             
-            <!-- Footer Links -->
             <div class="flex flex-wrap gap-6">
               <a href="#" class="text-sm text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors">
                 Privacy Policy
@@ -177,8 +109,7 @@
               </a>
             </div>
             
-            <!-- Copyright -->
-            <div class="text-sm text-gray-500 dark:text-gray-400 font-bold">
+            <div class="text-sm text-gray-500 dark:text-gray-400">
               © 2024 Date Reminder. All rights reserved.
             </div>
           </div>
@@ -199,26 +130,18 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import Navbar from './Navbar.vue'
 
-// Sidebar navigation items
+// Sidebar navigation items with routes
 const sidebarItems = [
-  { name: 'Dashboard', href: '/', icon: '📊' },
-  { name: 'Calendar', href: '/calendar', icon: '📅' },
-  { name: 'Reminders', href: '/reminders', icon: '⏰' },
-  { name: 'Settings', href: '/settings', icon: '⚙️' }
+  { name: 'Dashboard', to: '/dashboard', icon: '📊' },
+  { name: 'Calendar', to: '/calendar', icon: '📅' },
+  { name: 'Reminders', to: '/reminders', icon: '⏰' },
+  { name: 'Settings', to: '/settings', icon: '⚙️' }
 ]
 
 // State
 const sidebarOpen = ref(true)
 const activeSidebar = ref('Dashboard')
-const activeNav = ref('Home')
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 0)
-
-// Mock appointments data
-const appointments = ref([
-  { id: 1, title: 'Dentist Appointment', date: '2024-05-15', time: '10:00 AM', status: 'Confirmed' },
-  { id: 2, title: 'Team Meeting', date: '2024-05-16', time: '2:00 PM', status: 'Pending' },
-  { id: 3, title: 'Doctor Checkup', date: '2024-05-18', time: '11:30 AM', status: 'Confirmed' }
-])
 
 // Toggle sidebar
 const toggleSidebar = () => {
@@ -249,27 +172,17 @@ const handleResize = () => {
   }
 }
 
-// Event listener for navbar navigation changes
-const handleNavChange = (event) => {
-  if (event.detail && event.detail.activeNav) {
-    activeNav.value = event.detail.activeNav
-  }
-}
-
 onMounted(() => {
   handleResize()
   window.addEventListener('resize', handleResize)
-  window.addEventListener('nav-change', handleNavChange)
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
-  window.removeEventListener('nav-change', handleNavChange)
 })
 </script>
 
 <style scoped>
-/* Remove scrollbar from main content and add to whole page */
 main {
   scrollbar-width: thin;
 }
@@ -291,14 +204,12 @@ main::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
 
-/* Transition for main content margin */
 .transition-all {
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 300ms;
 }
 
-/* Ensure footer stays at bottom */
 .mt-auto {
   margin-top: auto;
 }

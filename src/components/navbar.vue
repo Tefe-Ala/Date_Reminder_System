@@ -83,7 +83,7 @@
             class="flex items-center gap-2 p-1 rounded-full hover:bg-white/10 transition-colors text-white"
           >
             <img src="/remaindericon.png" class="w-8 h-8 rounded-full object-cover border-2 border-white" />
-            <span class="hidden md:block text-sm font-medium">John Doe</span>
+            <span class="hidden md:block text-sm font-medium">Tefera Alagaw</span>
             <svg class="hidden md:block w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
@@ -119,22 +119,22 @@
         <!-- Nav Links - Mobile: left aligned, Desktop: space between -->
         <ul class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
           <li v-for="item in navItems" :key="item.name" class="md:flex-1">
-            <a 
-              :href="item.href"
-              @click.prevent="setActive(item.name)"
-              :class="[
-                'block px-4 py-2 rounded-lg transition-all duration-200 font-medium',
-                'text-left md:text-center', // Left align on mobile, center on desktop
-                activeNav === item.name 
-                  ? 'bg-white/20 text-white shadow-md' 
-                  : 'text-white/80 hover:bg-white/10 hover:text-white'
-              ]"
-            >
-              <div class="flex items-center gap-2 md:justify-center">
-                <span>{{ item.icon }}</span>
-                <span>{{ item.name }}</span>
-              </div>
-            </a>
+           <router-link
+               :to="item.to"
+                 @click="setActive(item.name)"
+               :class="[
+                 'block px-4 py-2 rounded-lg transition-all duration-200 font-medium',
+                  'text-left md:text-center',
+                 activeNav === item.name
+          ? 'bg-white/20 text-white shadow-md'
+         : 'text-white/80 hover:bg-white/10 hover:text-white'
+        ]"
+        >
+        <div class="flex items-center gap-2 md:justify-center">
+          <span>{{ item.icon }}</span>
+          <span>{{ item.name }}</span>
+        </div>
+      </router-link>
           </li>
         </ul>
 
@@ -173,10 +173,10 @@ import { ref, onMounted, onUnmounted } from 'vue'
 
 // Navigation items with icons
 const navItems = [
-  { name: 'Home', href: '#', icon: '🏠' },
-  { name: 'About', href: '#', icon: 'ℹ️' },
-  { name: 'Contact', href: '#', icon: '📞' },
-  { name: 'My Appointment', href: '#', icon: '📅' }
+  { name: 'Home', to: '/home', icon: '🏠' },
+  { name: 'About', to: '/about', icon: 'ℹ️' },
+  { name: 'Contact', to: '/contact', icon: '📞' },
+  { name: 'My Appointment', to: '/my-appointment', icon: '📅' }
 ]
 
 // State
