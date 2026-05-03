@@ -91,7 +91,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 
 // User name (you can get this from props or store)
-const userName = ref('John')
+const userName = ref('Tefera')
 
 // Dynamic greeting based on time of day
 const currentGreeting = ref('')
