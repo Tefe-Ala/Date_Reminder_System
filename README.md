@@ -23,6 +23,8 @@ A modern web-based reminder and deadline management system built to help users t
 * Laravel (API)
 ### Database
 * MySQL
+## Live Project
+* [Click here to view live app](https://date-reminder-system.vercel.app/)
 ## Licence
 This project is open-source and available.
 ## Author
