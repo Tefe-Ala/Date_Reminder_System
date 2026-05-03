@@ -138,10 +138,10 @@
 <script setup>
 // Replace these URLs with your actual profile links
 const contactLinks = {
-  email: "mailto:your.email@gmail.com",
-  linkedin: "https://www.linkedin.com/in/your-profile",
-  facebook: "https://www.facebook.com/your-profile",
-  telegram: "https://t.me/your-username"
+  email: "mailto:tefe7ala@gmail.com",
+  linkedin: "www.linkedin.com/in/tefera-alagaw-a95073230",
+  facebook: "https://www.facebook.com/Log Out Sign",
+  telegram: "https://t.me/https://t.me/tefe_Ala"
 }
 
 // You can also add a method to track clicks if needed
