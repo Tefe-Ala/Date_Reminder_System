@@ -197,7 +197,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import Navbar from './Navbar.vue'
+import Navbar from './navbar.vue'
 
 // Sidebar navigation items
 const sidebarItems = [
