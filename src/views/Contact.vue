@@ -25,13 +25,13 @@
             <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">Email Us</h3>
             <p class="text-gray-600 dark:text-gray-400 mb-4">Send us an email anytime</p>
             <a 
-              href="mailto:your.email@gmail.com"
+              href="mailto:tefe7ala@gmail.com"
               class="inline-flex items-center gap-2 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all transform hover:scale-105"
             >
               <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
               </svg>
-              your.email@gmail.com
+              tefe7ala@gmail.com
             </a>
           </div>
         </div>
@@ -48,7 +48,7 @@
             <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">LinkedIn</h3>
             <p class="text-gray-600 dark:text-gray-400 mb-4">Connect professionally</p>
             <a 
-              href="https://www.linkedin.com/in/your-profile"
+              href="https://www.linkedin.com/in/tefera-alagaw-a95073230"
               target="_blank"
               rel="noopener noreferrer"
               class="inline-flex items-center gap-2 px-6 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-all transform hover:scale-105"
@@ -73,7 +73,7 @@
             <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">Facebook</h3>
             <p class="text-gray-600 dark:text-gray-400 mb-4">Follow us on Facebook</p>
             <a 
-              href="https://www.facebook.com/your-profile"
+              href="https://www.facebook.com/Log Out Sign"
               target="_blank"
               rel="noopener noreferrer"
               class="inline-flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all transform hover:scale-105"
@@ -98,7 +98,7 @@
             <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">Telegram</h3>
             <p class="text-gray-600 dark:text-gray-400 mb-4">Join our Telegram channel</p>
             <a 
-              href="https://t.me/your-username"
+              href="https://t.me/tefe_Ala"
               target="_blank"
               rel="noopener noreferrer"
               class="inline-flex items-center gap-2 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all transform hover:scale-105"
@@ -117,7 +117,7 @@
         <div class="flex flex-col md:flex-row items-center justify-between gap-4">
           <div>
             <h3 class="text-xl font-bold mb-2">📧 Direct Email</h3>
-            <p class="text-lg">your.email@gmail.com</p>
+            <p class="text-lg">tefe7ala@gmail.com</p>
           </div>
           <div class="w-px h-12 bg-white/30 hidden md:block"></div>
           <div>
@@ -139,9 +139,9 @@
 // Replace these URLs with your actual profile links
 const contactLinks = {
   email: "mailto:tefe7ala@gmail.com",
-  linkedin: "www.linkedin.com/in/tefera-alagaw-a95073230",
+  linkedin: "https://www.linkedin.com/in/tefera-alagaw-a95073230",
   facebook: "https://www.facebook.com/Log Out Sign",
-  telegram: "https://t.me/https://t.me/tefe_Ala"
+  telegram: "https://t.me/tefe_Ala"
 }
 
 // You can also add a method to track clicks if needed
