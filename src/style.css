@@ -79,10 +79,17 @@ a { color: inherit; text-decoration: none; }
 .content-panel { padding: 22px; }
 .panel-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 19px; }
 .panel-heading h2 { margin: 0; font: 27px 'DM Serif Display', Georgia, serif; }
+.panel-subtitle { margin: 5px 0 0; color: var(--muted); font-size: 11px; }
 .panel-link { border: 0; background: none; color: var(--green); font: 600 11px 'IBM Plex Mono', monospace; letter-spacing: .1em; text-transform: uppercase; }
+.reminder-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 7px; }
+.filter-buttons { display: flex; flex-wrap: wrap; gap: 5px; }
+.filter-buttons button { border: 1px solid transparent; border-radius: 99px; background: transparent; padding: 7px 10px; color: var(--muted); font: 600 10px 'IBM Plex Mono', monospace; }
+.filter-buttons button:hover, .filter-buttons button.active { border-color: var(--line); background: var(--mint); color: var(--green); }
+.result-count { color: var(--muted); font: 10px 'IBM Plex Mono', monospace; white-space: nowrap; }
 .agenda { display: grid; }
 .reminder-row { position: relative; display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: 15px; border-top: 1px solid var(--line); padding: 16px 0; }
 .reminder-row:first-child { border-top: 0; padding-top: 0; }
+.reminder-row.is-done .reminder-copy h3 { color: var(--muted); text-decoration: line-through; }
 .reminder-date { border-radius: 12px; background: var(--mint); padding: 8px 4px; color: var(--green); text-align: center; }
 .reminder-date.coral { background: #fff0ec; color: #c04c3a; }
 .reminder-date.gold { background: #f2efe5; color: #8e6e24; }
@@ -90,15 +97,28 @@ a { color: inherit; text-decoration: none; }
 .reminder-date span { font: 9px 'IBM Plex Mono', monospace; text-transform: uppercase; }
 .reminder-copy h3 { margin: 0 0 4px; font-size: 14px; }
 .reminder-copy p { margin: 0; color: var(--muted); font-size: 12px; }
+.reminder-copy .reminder-notes { margin-top: 6px; overflow: hidden; max-width: 370px; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+.reminder-side { display: flex; align-items: center; gap: 12px; }
+.reminder-actions { display: flex; align-items: center; gap: 5px; }
+.action-button { border: 0; background: none; padding: 4px; color: var(--muted); font-size: 11px; }
+.action-button:hover { color: var(--green); }
+.action-button.danger:hover { color: var(--coral); }
 .tag { border-radius: 99px; background: #f7ece9; padding: 6px 9px; color: #c04c3a; font: 600 9px 'IBM Plex Mono', monospace; text-transform: uppercase; }
 .tag.green { background: var(--mint); color: var(--green); }
 .complete-button { width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 50%; background: var(--panel); color: var(--green); }
 .complete-button.done { border-color: var(--green); background: var(--green); color: #fff; }
 .calendar-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 14px; }
-.calendar-day { color: var(--muted); text-align: center; font: 10px 'IBM Plex Mono', monospace; }
+.calendar-day { border: 0; border-radius: 9px; background: transparent; color: var(--muted); cursor: pointer; padding: 3px 0; text-align: center; font: 10px 'IBM Plex Mono', monospace; }
+.calendar-day:hover { background: var(--mint); color: var(--green); }
 .calendar-day strong { display: grid; width: 28px; height: 28px; place-items: center; margin: 6px auto 0; border-radius: 50%; color: var(--ink); font: 13px 'DM Sans', sans-serif; }
 .calendar-day.today strong { background: var(--green); color: #fff; }
 .calendar-day.has-event strong { box-shadow: inset 0 -3px 0 var(--coral); }
+.calendar-day.muted { opacity: .4; }
+.calendar-controls { display: flex; gap: 5px; }
+.calendar-button, .today-button { border: 1px solid var(--line); border-radius: 99px; background: var(--panel); color: var(--ink); font-size: 12px; }
+.calendar-button { width: 28px; height: 28px; }
+.calendar-button:hover, .today-button:hover { border-color: var(--green); color: var(--green); }
+.today-button { margin: 1px 0 16px; padding: 7px 11px; font: 600 10px 'IBM Plex Mono', monospace; }
 .next-reminder { display: flex; align-items: center; justify-content: space-between; border-radius: 15px; background: var(--green-dark); padding: 16px; color: #fff; }
 .next-reminder span { color: #9eb3a6; font: 10px 'IBM Plex Mono', monospace; }
 .next-reminder b { display: block; margin-top: 5px; font-size: 13px; }
@@ -133,11 +153,21 @@ a { color: inherit; text-decoration: none; }
 .modal { width: min(440px, 100%); border-radius: 22px; background: var(--panel); padding: 25px; box-shadow: 0 25px 70px rgb(0 0 0 / .24); }
 .modal-head { display: flex; align-items: center; justify-content: space-between; }
 .modal h2 { margin: 0; font: 31px 'DM Serif Display', Georgia, serif; }
+.modal-kicker { margin: 0 0 5px; color: var(--green); font: 600 10px 'IBM Plex Mono', monospace; letter-spacing: .14em; text-transform: uppercase; }
 .close-button { border: 0; background: none; color: var(--muted); font-size: 24px; }
 .reminder-form { display: grid; gap: 13px; margin-top: 22px; }
 .reminder-form label { color: var(--muted); font-size: 11px; font-weight: 700; }
-.reminder-form input, .reminder-form select { width: 100%; margin-top: 6px; border: 1px solid var(--line); border-radius: 11px; background: var(--panel); padding: 12px 13px; color: var(--ink); font-size: 13px; }
-.reminder-form button { border: 0; border-radius: 99px; background: var(--green); padding: 13px; color: #fff; font-weight: 700; }
+.reminder-form input, .reminder-form select, .reminder-form textarea { width: 100%; margin-top: 6px; border: 1px solid var(--line); border-radius: 11px; background: var(--panel); padding: 12px 13px; color: var(--ink); font-size: 13px; outline: 0; resize: vertical; }
+.reminder-form input:focus, .reminder-form select:focus, .reminder-form textarea:focus { border-color: var(--green); box-shadow: 0 0 0 4px rgb(11 107 89 / .1); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.optional { float: right; color: var(--muted); font-weight: 400; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 5px; }
+.modal-actions .primary-button, .modal-actions .secondary-button { padding: 11px 16px; }
+.secondary-button { border: 1px solid var(--line); border-radius: 99px; background: var(--panel); padding: 10px 14px; color: var(--ink); font-weight: 700; }
+.secondary-button:hover { border-color: var(--green); color: var(--green); }
+.empty-state { border: 1px dashed var(--line); border-radius: 14px; margin-top: 15px; padding: 28px 18px; text-align: center; }
+.empty-state strong { font-size: 14px; }
+.empty-state p { margin: 7px 0 15px; color: var(--muted); font-size: 12px; }
 
 @media (max-width: 1100px) { .app-sidebar { width: 205px; } .app-content { padding-left: 205px; } .app-topbar { padding: 0 25px; } .app-main { padding: 30px 25px; } .dashboard-grid, .lower-grid { grid-template-columns: 1fr; } .search-box { width: 180px; } }
-@media (max-width: 720px) { .app-sidebar { transform: translateX(-100%); } .app-sidebar.open { transform: translateX(0); } .app-content { padding-left: 0; } .app-topbar { padding: 0 16px; } .menu-button { display: grid; } .crumb { display: none; } .search-box { display: none; } .app-main { padding: 27px 16px; } .page-heading { align-items: flex-start; flex-direction: column; } .page-heading h1 { font-size: 44px; } .primary-button { align-self: stretch; } .metric-grid { grid-template-columns: repeat(2, 1fr); } .metric-card { padding: 15px; } .metric-value { font-size: 32px; } .reminder-row { grid-template-columns: 54px 1fr; gap: 12px; } .reminder-row .tag { grid-column: 2; justify-self: start; } .reminder-row .complete-button { position: absolute; right: 0; } .app-footer { align-items: flex-start; flex-direction: column; padding: 20px 16px; } .contact-grid { grid-template-columns: 1fr; } }
+@media (max-width: 720px) { .app-sidebar { transform: translateX(-100%); } .app-sidebar.open { transform: translateX(0); } .app-content { padding-left: 0; } .app-topbar { padding: 0 16px; } .menu-button { display: grid; } .crumb { display: none; } .search-box { display: none; } .app-main { padding: 27px 16px; } .page-heading { align-items: flex-start; flex-direction: column; } .page-heading h1 { font-size: 44px; } .primary-button { align-self: stretch; } .metric-grid { grid-template-columns: repeat(2, 1fr); } .metric-card { padding: 15px; } .metric-value { font-size: 32px; } .reminder-row { grid-template-columns: 54px 1fr; gap: 12px; } .reminder-side { grid-column: 2; justify-content: space-between; padding-right: 32px; } .reminder-row .complete-button { position: absolute; right: 0; } .reminder-actions .action-button { padding: 3px; } .form-row { grid-template-columns: 1fr; gap: 13px; } .app-footer { align-items: flex-start; flex-direction: column; padding: 20px 16px; } .contact-grid { grid-template-columns: 1fr; } }
