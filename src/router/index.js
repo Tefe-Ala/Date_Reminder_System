@@ -2,19 +2,19 @@ import { createRouter, createWebHistory } from 'vue-router'
 import MainLayout from '../components/MainLayout.vue'
 import Home from '../views/Home.vue'
 import About from '../views/About.vue'
-import Dashboard from '../views/Dashboard.vue'
 import Contact from '../views/Contact.vue'
 // import MyAppointment from '../views/MyAppointment.vue'
 
 const routes = [
+  { path: '/', redirect: '/home' },
   {
     path: '/',
     component: MainLayout,
     children: [
-         {
+      {
         path: '/dashboard',
         name: 'Dashboard',
-        component: Dashboard
+        redirect: '/home'
       },
       {
         path: '/home',
