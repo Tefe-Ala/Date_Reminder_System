@@ -1,5 +1,9 @@
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import './style.css'
 import App from './App.vue'
 import router from './router'
-createApp(App).use(router).mount('#app')
+
+if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark')
+
+createApp(App).use(createPinia()).use(router).mount('#app')
