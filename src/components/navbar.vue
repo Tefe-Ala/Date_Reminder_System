@@ -33,16 +33,15 @@
 
 <script setup>
 import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useReminderStore } from '../stores/reminders'
 
 const emit = defineEmits(['toggle-sidebar'])
-const searchQuery = ref('')
+const reminderStore = useReminderStore()
+const { searchQuery, notifications } = storeToRefs(reminderStore)
 const showNotifications = ref(false)
 const showProfile = ref(false)
 const isDark = ref(typeof localStorage !== 'undefined' && localStorage.getItem('theme') === 'dark')
-const notifications = [
-  { id: 1, message: 'Submit research proposal is due today.' },
-  { id: 2, message: 'Renew domain registration in two days.' },
-]
 
 function toggleDark() {
   isDark.value = !isDark.value
