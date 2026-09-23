@@ -1,6 +1,8 @@
 import axios from 'axios'
 
+
 const workspaceStorageKey = 'daymark-workspace-id'
+
 
 function getWorkspaceId() {
   if (typeof localStorage === 'undefined') return 'local-development-workspace'
@@ -14,17 +16,20 @@ function getWorkspaceId() {
   return id
 }
 
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:10000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://date-reminder-api-aym7.onrender.com/api',
   headers: {
     Accept: 'application/json',
     'Content-Type': 'application/json'
   }
 })
 
+
 api.interceptors.request.use((config) => {
   config.headers['x-workspace-id'] = getWorkspaceId()
   return config
 })
+
 
 export default api
