@@ -15,13 +15,12 @@ const repeats = new Set(['None', 'Weekly', 'Monthly', 'Yearly'])
 const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN
 const telegramChatId = process.env.TELEGRAM_CHAT_ID
 const notificationCronSecret = process.env.NOTIFICATION_CRON_SECRET
-const notificationLeadMinutes = positiveMinutes(process.env.NOTIFICATION_LEAD_MINUTES, 30)
-const notificationIntervalMinutes = positiveMinutes(process.env.NOTIFICATION_INTERVAL_MINUTES, 5)
+const notificationOffsets = parseNotificationOffsets(process.env.NOTIFICATION_OFFSETS_MINUTES || '30,15,10')
 const notificationTimezone = process.env.NOTIFICATION_TIMEZONE || 'UTC'
 
-function positiveMinutes(value, fallback) {
-  const minutes = Number(value)
-  return Number.isFinite(minutes) && minutes > 0 ? Math.min(minutes, 24 * 60) : fallback
+function parseNotificationOffsets(value) {
+  const offsets = String(value).split(',').map(Number).filter((minutes) => Number.isInteger(minutes) && minutes > 0 && minutes <= 24 * 60)
+  return [...new Set(offsets)].sort((a, b) => b - a)
 }
 
 try {
@@ -136,7 +135,7 @@ async function runNotificationTick() {
 
   const { data, error } = await supabase
     .from('reminders')
-    .select('id, title, date, time, notes, done, telegram_enabled, telegram_last_notified_at')
+    .select('id, title, date, time, notes, done, telegram_enabled, telegram_last_notified_at, telegram_notified_offsets')
     .eq('done', false)
     .eq('telegram_enabled', true)
     .not('time', 'is', null)
@@ -144,30 +143,32 @@ async function runNotificationTick() {
   if (error) throw error
 
   const now = zonedWallClock()
-  const leadMillis = notificationLeadMinutes * 60 * 1000
-  const intervalMillis = notificationIntervalMinutes * 60 * 1000
   let sent = 0
 
   for (const reminder of data || []) {
     const dueMillis = reminderWallMillis(reminder)
-    if (dueMillis === null || now.wallMillis < dueMillis - leadMillis || now.wallMillis >= dueMillis) continue
-
-    const lastSent = reminder.telegram_last_notified_at ? Date.parse(reminder.telegram_last_notified_at) : NaN
-    if (Number.isFinite(lastSent) && Date.now() - lastSent < intervalMillis) continue
+    const remainingMinutes = dueMillis === null ? -1 : (dueMillis - now.wallMillis) / 60_000
+    const notifiedOffsets = new Set((reminder.telegram_notified_offsets || []).map(Number))
+    const offset = notificationOffsets
+      .filter((minutes) => remainingMinutes > 0 && remainingMinutes <= minutes && !notifiedOffsets.has(minutes))
+      .sort((a, b) => a - b)[0]
+    if (offset === undefined) continue
 
     const dueTime = String(reminder.time).slice(0, 5)
     const message = [
       'Reminder approaching',
       `${reminder.title}`,
+      `${offset} minutes left`,
       `Due ${reminder.date} at ${dueTime} (${notificationTimezone})`,
       reminder.notes ? reminder.notes : null,
     ].filter(Boolean).join('\n')
 
     try {
       await sendTelegramMessage(message)
+      const nextNotifiedOffsets = [...notifiedOffsets, offset].sort((a, b) => b - a)
       const { error: updateError } = await supabase
         .from('reminders')
-        .update({ telegram_last_notified_at: new Date().toISOString() })
+        .update({ telegram_last_notified_at: new Date().toISOString(), telegram_notified_offsets: nextNotifiedOffsets })
         .eq('id', reminder.id)
         .eq('done', false)
       if (updateError) throw updateError
@@ -184,8 +185,7 @@ app.get('/health', (_req, res) => res.json({
   ok: true,
   service: 'date-reminder-api',
   telegramConfigured: telegramConfigured(),
-  notificationLeadMinutes,
-  notificationIntervalMinutes,
+  notificationOffsets,
   notificationTimezone,
 }))
 
@@ -225,7 +225,7 @@ app.patch('/api/reminders/:id', workspaceId, async (req, res) => {
     const input = reminderInput(req.body, true)
     const { data, error } = await supabase
       .from('reminders')
-      .update({ ...input, telegram_last_notified_at: null })
+        .update({ ...input, telegram_last_notified_at: null, telegram_notified_offsets: [] })
       .eq('id', req.params.id)
       .eq('workspace_id', req.workspaceId)
       .select('*')
