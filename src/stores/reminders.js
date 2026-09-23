@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
+import api from '../services/api'
 
 const STORAGE_KEY = 'daymark-reminders'
 
@@ -17,9 +18,17 @@ function dateFromToday(offset) {
   return toIsoDate(date)
 }
 
-function readReminders() {
-  if (typeof localStorage === 'undefined') return createStarterReminders()
+function createStarterReminders() {
+  return [
+    { id: 1, title: 'Submit research proposal', date: dateFromToday(0), time: '16:00', tag: 'Important', notes: 'Send the final PDF to the department.', repeat: 'None', done: false },
+    { id: 2, title: 'Renew domain registration', date: dateFromToday(2), time: '10:30', tag: 'Personal', notes: '', repeat: 'Yearly', done: false },
+    { id: 3, title: 'Prepare lecture materials', date: dateFromToday(5), time: '09:00', tag: 'Teaching', notes: 'Review the slides and print the handouts.', repeat: 'None', done: false },
+    { id: 4, title: 'Monthly report', date: dateFromToday(8), time: '14:00', tag: 'Teaching', notes: '', repeat: 'Monthly', done: false },
+  ]
+}
 
+function readLocalReminders() {
+  if (typeof localStorage === 'undefined') return createStarterReminders()
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null')
     return Array.isArray(saved) ? saved : createStarterReminders()
@@ -28,13 +37,8 @@ function readReminders() {
   }
 }
 
-function createStarterReminders() {
-  return [
-    { id: 1, title: 'Submit research proposal', date: dateFromToday(0), time: '16:00', tag: 'Important', notes: 'Send the final PDF to the department.', repeat: 'None', done: false },
-    { id: 2, title: 'Renew domain registration', date: dateFromToday(2), time: '10:30', tag: 'Personal', notes: '', repeat: 'Yearly', done: false },
-    { id: 3, title: 'Prepare lecture materials', date: dateFromToday(5), time: '09:00', tag: 'Teaching', notes: 'Review the slides and print the handouts.', repeat: 'None', done: false },
-    { id: 4, title: 'Monthly report', date: dateFromToday(8), time: '14:00', tag: 'Teaching', notes: '', repeat: 'Monthly', done: false },
-  ]
+function persistLocal(reminders) {
+  if (typeof localStorage !== 'undefined') localStorage.setItem(STORAGE_KEY, JSON.stringify(reminders))
 }
 
 function parseDate(value) {
@@ -47,11 +51,30 @@ function startOfToday() {
   return date
 }
 
+function normaliseReminder(reminder) {
+  return { ...reminder, time: reminder.time ? reminder.time.slice(0, 5) : '' }
+}
+
+function payloadFor(reminder) {
+  return {
+    title: reminder.title,
+    date: reminder.date,
+    time: reminder.time || null,
+    tag: reminder.tag,
+    notes: reminder.notes || '',
+    repeat: reminder.repeat || 'None',
+    done: Boolean(reminder.done),
+  }
+}
+
 export const useReminderStore = defineStore('reminders', () => {
-  const reminders = ref(readReminders())
+  const reminders = ref(readLocalReminders())
   const searchQuery = ref('')
   const filter = ref('all')
   const activeMonth = ref(new Date(new Date().getFullYear(), new Date().getMonth(), 1))
+  const loading = ref(false)
+  const loaded = ref(false)
+  const errorMessage = ref('')
 
   const sortedReminders = computed(() => [...reminders.value].sort((a, b) => {
     const dateDifference = parseDate(a.date) - parseDate(b.date)
@@ -93,13 +116,10 @@ export const useReminderStore = defineStore('reminders', () => {
 
   const notifications = computed(() => {
     const notices = []
-    if (dueToday.value.length) {
-      notices.push({ id: 'today', message: `${dueToday.value.length} reminder${dueToday.value.length === 1 ? '' : 's'} due today.` })
-    }
+    if (dueToday.value.length) notices.push({ id: 'today', message: `${dueToday.value.length} reminder${dueToday.value.length === 1 ? '' : 's'} due today.` })
     const tomorrow = new Date()
     tomorrow.setDate(tomorrow.getDate() + 1)
-    const tomorrowKey = toIsoDate(tomorrow)
-    const tomorrowCount = sortedReminders.value.filter((reminder) => reminder.date === tomorrowKey && !reminder.done).length
+    const tomorrowCount = sortedReminders.value.filter((reminder) => reminder.date === toIsoDate(tomorrow) && !reminder.done).length
     if (tomorrowCount) notices.push({ id: 'tomorrow', message: `${tomorrowCount} reminder${tomorrowCount === 1 ? '' : 's'} due tomorrow.` })
     if (!notices.length && nextReminder.value) notices.push({ id: 'next', message: `${nextReminder.value.title} is next on the calendar.` })
     return notices
@@ -119,14 +139,7 @@ export const useReminderStore = defineStore('reminders', () => {
       const date = new Date(start)
       date.setDate(start.getDate() + index)
       const iso = toIsoDate(date)
-      return {
-        date: date.getDate(),
-        iso,
-        label: date.toLocaleDateString('en-US', { weekday: 'narrow' }),
-        isCurrentMonth: date.getMonth() === month,
-        isToday: iso === today,
-        hasEvent: eventDates.has(iso),
-      }
+      return { date: date.getDate(), iso, label: date.toLocaleDateString('en-US', { weekday: 'narrow' }), isCurrentMonth: date.getMonth() === month, isToday: iso === today, hasEvent: eventDates.has(iso) }
     }).reduce((weeks, day, index) => {
       if (index % 7 === 0) weeks.push([])
       weeks[weeks.length - 1].push(day)
@@ -134,62 +147,92 @@ export const useReminderStore = defineStore('reminders', () => {
     }, [])
   })
 
-  function persist() {
-    if (typeof localStorage !== 'undefined') localStorage.setItem(STORAGE_KEY, JSON.stringify(reminders.value))
+  async function loadReminders(force = false) {
+    if (loading.value || (loaded.value && !force)) return
+    loading.value = true
+    errorMessage.value = ''
+    const localReminders = readLocalReminders()
+    try {
+      const { data } = await api.get('/reminders')
+      const remoteReminders = (data.data || []).map(normaliseReminder)
+      if (!remoteReminders.length && localReminders.length) {
+        const migrated = await Promise.all(localReminders.map(async (reminder) => {
+          const response = await api.post('/reminders', payloadFor(reminder))
+          return normaliseReminder(response.data.data)
+        }))
+        reminders.value = migrated
+      } else {
+        reminders.value = remoteReminders
+      }
+      persistLocal(reminders.value)
+    } catch (error) {
+      reminders.value = localReminders
+      errorMessage.value = 'The API is unavailable. Changes will stay on this device until it reconnects.'
+      console.warn(error)
+    } finally {
+      loaded.value = true
+      loading.value = false
+    }
   }
 
-  function addReminder(input) {
-    reminders.value.push({ id: Date.now(), done: false, repeat: 'None', notes: '', ...input })
-    persist()
+  function retry() {
+    return loadReminders(true)
   }
 
-  function updateReminder(id, input) {
-    const index = reminders.value.findIndex((reminder) => reminder.id === id)
-    if (index === -1) return
-    reminders.value[index] = { ...reminders.value[index], ...input }
-    persist()
+  async function addReminder(input) {
+    try {
+      const { data } = await api.post('/reminders', payloadFor(input))
+      reminders.value.push(normaliseReminder(data.data))
+    } catch (error) {
+      reminders.value.push({ id: Date.now(), ...payloadFor(input) })
+      errorMessage.value = 'Saved locally because the API is unavailable.'
+      console.warn(error)
+    }
+    persistLocal(reminders.value)
   }
 
-  function removeReminder(id) {
+  async function updateReminder(id, input) {
+    try {
+      const { data } = await api.patch(`/reminders/${id}`, payloadFor(input))
+      const index = reminders.value.findIndex((reminder) => reminder.id === id)
+      if (index !== -1) reminders.value[index] = normaliseReminder(data.data)
+    } catch (error) {
+      const index = reminders.value.findIndex((reminder) => reminder.id === id)
+      if (index !== -1) reminders.value[index] = { ...reminders.value[index], ...payloadFor(input) }
+      errorMessage.value = 'Updated locally because the API is unavailable.'
+      console.warn(error)
+    }
+    persistLocal(reminders.value)
+  }
+
+  async function removeReminder(id) {
+    try {
+      await api.delete(`/reminders/${id}`)
+    } catch (error) {
+      errorMessage.value = 'Removed locally because the API is unavailable.'
+      console.warn(error)
+    }
     reminders.value = reminders.value.filter((reminder) => reminder.id !== id)
-    persist()
+    persistLocal(reminders.value)
   }
 
-  function toggleComplete(id) {
+  async function toggleComplete(id) {
     const reminder = reminders.value.find((item) => item.id === id)
     if (!reminder) return
-    reminder.done = !reminder.done
-    persist()
+    const nextDone = !reminder.done
+    reminder.done = nextDone
+    try {
+      const { data } = await api.patch(`/reminders/${id}`, { done: nextDone })
+      Object.assign(reminder, normaliseReminder(data.data))
+    } catch (error) {
+      errorMessage.value = 'Updated locally because the API is unavailable.'
+      console.warn(error)
+    }
+    persistLocal(reminders.value)
   }
 
-  function setMonth(offset) {
-    activeMonth.value = new Date(activeMonth.value.getFullYear(), activeMonth.value.getMonth() + offset, 1)
-  }
+  function setMonth(offset) { activeMonth.value = new Date(activeMonth.value.getFullYear(), activeMonth.value.getMonth() + offset, 1) }
+  function goToCurrentMonth() { const now = new Date(); activeMonth.value = new Date(now.getFullYear(), now.getMonth(), 1) }
 
-  function goToCurrentMonth() {
-    const now = new Date()
-    activeMonth.value = new Date(now.getFullYear(), now.getMonth(), 1)
-  }
-
-  return {
-    reminders,
-    searchQuery,
-    filter,
-    visibleReminders,
-    dueToday,
-    thisWeek,
-    completedCount,
-    completionRate,
-    recurringCount,
-    nextReminder,
-    notifications,
-    monthLabel,
-    calendarWeeks,
-    addReminder,
-    updateReminder,
-    removeReminder,
-    toggleComplete,
-    setMonth,
-    goToCurrentMonth,
-  }
+  return { reminders, searchQuery, filter, visibleReminders, dueToday, thisWeek, completedCount, completionRate, recurringCount, nextReminder, notifications, monthLabel, calendarWeeks, loading, loaded, errorMessage, loadReminders, retry, addReminder, updateReminder, removeReminder, toggleComplete, setMonth, goToCurrentMonth }
 })
