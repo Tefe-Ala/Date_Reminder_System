@@ -12,12 +12,14 @@ create table if not exists public.reminders (
   done boolean not null default false,
   telegram_enabled boolean not null default true,
   telegram_last_notified_at timestamptz,
+  telegram_notified_offsets integer[] not null default '{}',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 
 alter table public.reminders add column if not exists telegram_enabled boolean not null default true;
 alter table public.reminders add column if not exists telegram_last_notified_at timestamptz;
+alter table public.reminders add column if not exists telegram_notified_offsets integer[] not null default '{}';
 
 create index if not exists reminders_workspace_date_idx on public.reminders (workspace_id, date, time);
 
