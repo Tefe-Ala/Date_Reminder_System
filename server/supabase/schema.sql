@@ -10,9 +10,14 @@ create table if not exists public.reminders (
   notes text not null default '',
   repeat text not null default 'None' check (repeat in ('None', 'Weekly', 'Monthly', 'Yearly')),
   done boolean not null default false,
+  telegram_enabled boolean not null default true,
+  telegram_last_notified_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.reminders add column if not exists telegram_enabled boolean not null default true;
+alter table public.reminders add column if not exists telegram_last_notified_at timestamptz;
 
 create index if not exists reminders_workspace_date_idx on public.reminders (workspace_id, date, time);
 
