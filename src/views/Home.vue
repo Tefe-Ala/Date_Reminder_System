@@ -7,6 +7,7 @@
       </div>
       <button class="primary-button" @click="openNewReminder()">+ Add reminder</button>
     </section>
+    <div v-if="errorMessage" class="api-notice" role="status"><span>{{ errorMessage }}</span><button @click="store.retry">Retry connection</button></div>
 
     <section id="completed" class="metric-grid" aria-label="Reminder summary">
       <article class="metric-card"><span class="metric-label">Due today</span><strong class="metric-value">{{ String(dueToday.length).padStart(2, '0') }}</strong><span class="metric-note">{{ dueToday.length ? 'Needs your attention' : 'Nothing urgent' }}</span></article>
@@ -74,17 +75,19 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useReminderStore } from '../stores/reminders'
 
 const store = useReminderStore()
-const { reminders, filter, visibleReminders, dueToday, thisWeek, completedCount, completionRate, recurringCount, nextReminder, monthLabel, calendarWeeks } = storeToRefs(store)
+const { reminders, filter, visibleReminders, dueToday, thisWeek, completedCount, completionRate, recurringCount, nextReminder, monthLabel, calendarWeeks, errorMessage } = storeToRefs(store)
 const filterOptions = [{ value: 'all', label: 'All' }, { value: 'upcoming', label: 'Upcoming' }, { value: 'completed', label: 'Completed' }]
 const showModal = ref(false)
 const editingId = ref(null)
 const todayIso = toIsoDate(new Date())
 const form = ref(defaultForm())
+
+onMounted(() => store.loadReminders())
 
 const dateLabel = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(new Date())
 const daysUntilNext = computed(() => {
@@ -134,3 +137,4 @@ function deleteReminder(reminder) {
   if (window.confirm(`Delete “${reminder.title}”?`)) store.removeReminder(reminder.id)
 }
 </script>
+ 
