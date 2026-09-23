@@ -67,6 +67,18 @@ function payloadFor(reminder) {
   }
 }
 
+function reminderFingerprint(reminder) {
+  return [
+    reminder.title,
+    reminder.date,
+    reminder.time || '',
+    reminder.tag,
+    reminder.notes || '',
+    reminder.repeat || 'None',
+    Boolean(reminder.done),
+  ].join('|')
+}
+
 export const useReminderStore = defineStore('reminders', () => {
   const reminders = ref(readLocalReminders())
   const searchQuery = ref('')
@@ -155,12 +167,14 @@ export const useReminderStore = defineStore('reminders', () => {
     try {
       const { data } = await api.get('/reminders')
       const remoteReminders = (data.data || []).map(normaliseReminder)
-      if (!remoteReminders.length && localReminders.length) {
-        const migrated = await Promise.all(localReminders.map(async (reminder) => {
+      const remoteFingerprints = new Set(remoteReminders.map(reminderFingerprint))
+      const localOnlyReminders = localReminders.filter((reminder) => !remoteFingerprints.has(reminderFingerprint(reminder)))
+      if (localOnlyReminders.length) {
+        const migrated = await Promise.all(localOnlyReminders.map(async (reminder) => {
           const response = await api.post('/reminders', payloadFor(reminder))
           return normaliseReminder(response.data.data)
         }))
-        reminders.value = migrated
+        reminders.value = [...remoteReminders, ...migrated]
       } else {
         reminders.value = remoteReminders
       }
